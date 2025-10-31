@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QZ Workout Builder</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #252525;
+            padding: 15px 30px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            color: #fff;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #357abd;
+        }
+        
+        button.secondary {
+            background: #5a6268;
+        }
+        
+        button.secondary:hover {
+            background: #4a525a;
+        }
+        
+        button.danger {
+            background: #d9534f;
+        }
+        
+        button.danger:hover {
+            background: #c9302c;
+        }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .timeline-container {
+            flex: 2;
+            background: #2a2a2a;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #333;
+        }
+        
+        .timeline {
+            min-height: 400px;
+            position: relative;
+        }
+        
+        .timeline-blocks {
+            display: flex;
+            gap: 2px;
+            min-height: 200px;
+            background: #1f1f1f;
+            padding: 10px;
+            border-radius: 4px;
+            align-items: flex-end;
+        }
+        
+        .block {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 8px 4px;
+            min-width: 40px;
+            color: white;
+            font-size: 11px;
+        }
+        
+        .block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .block.selected {
+            outline: 3px solid #ffa500;
+            outline-offset: 2px;
+        }
+        
+        .block-duration {
+            font-weight: bold;
+            text-align: center;
+            font-size: 10px;
+        }
+        
+        .block-type {
+            text-align: center;
+            opacity: 0.9;
+            font-size: 9px;
+        }
+        
+        .empty-timeline {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .timeline-stats {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1f1f1f;
+            border-radius: 4px;
+            display: flex;
+            gap: 30px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        
+        .editor-panel {
+            flex: 1;
+            background: #252525;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .editor-section {
+            margin-bottom: 20px;
+        }
+        
+        .editor-section h3 {
+            margin-bottom: 15px;
+            color: #fff;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-size: 11px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        input, select {
+            padding: 8px;
+            border: 1px solid #444;
+            border-radius: 3px;
+            font-size: 13px;
+            background: #1f1f1f;
+            color: #e0e0e0;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: #2a2a2a;
+        }
+        
+        .help-text {
+            font-size: 10px;
+            color: #666;
+            margin-top: 2px;
+        }
+        
+        .output-section {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        .output-section h3 {
+            margin-bottom: 10px;
+            color: #fff;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 12px;
+            border: 1px solid #444;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            resize: vertical;
+            background: #1f1f1f;
+            color: #e0e0e0;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .tab.active {
+            color: #4a90e2;
+            border-bottom-color: #4a90e2;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <h1>QZ Workout Builder</h1>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="font-size: 12px; color: #aaa;">FTP:</label>
+                    <input type="number" id="ftpValue" value="200" min="50" max="500" 
+                           style="width: 70px; padding: 6px; background: #1f1f1f; border: 1px solid #444; border-radius: 3px; color: #e0e0e0;"
+                           onchange="updateFTPDisplay()">
+                    <span style="font-size: 11px; color: #666;">watts</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="font-size: 12px; color: #aaa;">Age:</label>
+                    <input type="number" id="ageValue" value="30" min="15" max="100" 
+                           style="width: 60px; padding: 6px; background: #1f1f1f; border: 1px solid #444; border-radius: 3px; color: #e0e0e0;"
+                           onchange="updateTimeline()">
+                    <span style="font-size: 11px; color: #666;">years</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="font-size: 12px; color: #aaa;">Format:</label>
+                    <select id="exportFormat" style="padding: 6px; background: #1f1f1f; border: 1px solid #444; border-radius: 3px; color: #e0e0e0; font-size: 12px;">
+                        <option value="qz">QZ XML</option>
+                        <option value="zwo">ZWO (Zwift)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="secondary" onclick="importXML()">Import</button>
+                <button class="secondary" onclick="downloadXML()">Download</button>
+                <button class="danger" onclick="clearWorkout()">Clear</button>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="timeline-container">
+                <div style="margin-bottom: 20px; padding: 15px; background: #1f1f1f; border-radius: 4px;">
+                    <h3 style="margin-bottom: 10px; color: #fff; font-size: 13px;">QUICK PRESETS</h3>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button style="padding: 6px 12px; font-size: 11px;" onclick="addPreset('warmup')">Warmup</button>
+                        <button style="padding: 6px 12px; font-size: 11px;" onclick="addPreset('cooldown')">Cooldown</button>
+                        <button style="padding: 6px 12px; font-size: 11px;" onclick="addPreset('ss')">Steady State</button>
+                        <button style="padding: 6px 12px; font-size: 11px;" onclick="addPreset('interval')">Interval</button>
+                        <button style="padding: 6px 12px; font-size: 11px;" onclick="addPreset('rest')">Rest</button>
+                        <button style="padding: 6px 12px; font-size: 11px;" onclick="addPreset('freeride')">Free Ride</button>
+                    </div>
+                </div>
+                
+                <h3 style="margin-bottom: 15px; color: #fff; font-size: 14px;">WORKOUT TIMELINE</h3>
+                <div class="timeline" id="timeline">
+                    <div class="timeline-blocks" id="timelineBlocks">
+                        <div class="empty-timeline">
+                            Click "Add Block" to start building your workout
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-stats">
+                    <div class="stat">
+                        <span class="stat-label">Total Duration</span>
+                        <span class="stat-value" id="totalDuration">00:00:00</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Blocks</span>
+                        <span class="stat-value" id="totalBlocks">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="editor-panel">
+                <div class="editor-section">
+                    <h3>Block Editor</h3>
+                    
+                    <div class="tabs">
+                        <button class="tab active" onclick="showTab('basic')">Basic</button>
+                        <button class="tab" onclick="showTab('treadmill')">Treadmill</button>
+                        <button class="tab" onclick="showTab('bike')">Bike</button>
+                        <button class="tab" onclick="showTab('heart-rate')">Heart Rate</button>
+                        <button class="tab" onclick="showTab('advanced')">Advanced</button>
+                    </div>
+                    
+                    <div id="basic" class="tab-content active">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Block Type</label>
+                                <select id="blockType" onchange="updateBlockTypeFields()">
+                                    <option value="steady">Steady State</option>
+                                    <option value="warmup">Warmup (Ramp Up)</option>
+                                    <option value="cooldown">Cooldown (Ramp Down)</option>
+                                    <option value="interval">Interval</option>
+                                    <option value="rest">Rest/Recovery</option>
+                                    <option value="freeride">Free Ride</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Duration *</label>
+                                <input type="text" id="duration" placeholder="00:05:00" value="00:05:00">
+                                <span class="help-text">HH:MM:SS</span>
+                            </div>
+                            <div class="form-group" id="ftpStartGroup">
+                                <label>Power (% FTP)</label>
+                                <input type="number" id="ftpPercent" step="1" placeholder="65" min="0" max="300">
+                                <span class="help-text" id="wattsDisplay">watts</span>
+                            </div>
+                            <div class="form-group" id="ftpEndGroup" style="display: none;">
+                                <label>End Power (% FTP)</label>
+                                <input type="number" id="ftpPercentEnd" step="1" placeholder="95" min="0" max="300">
+                                <span class="help-text" id="wattsDisplayEnd">watts</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="treadmill" class="tab-content">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Speed</label>
+                                <input type="number" id="speed" step="0.1" placeholder="8.0">
+                                <span class="help-text">km/h or mph</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Inclination</label>
+                                <input type="number" id="inclination" step="0.1" placeholder="2.5">
+                                <span class="help-text">% grade</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Max Speed</label>
+                                <input type="number" id="maxspeed" step="0.1" placeholder="12.0">
+                            </div>
+                            <div class="form-group">
+                                <label>Min Speed</label>
+                                <input type="number" id="minspeed" step="0.1" placeholder="3.0">
+                            </div>
+                            <div class="form-group">
+                                <label>Force Speed</label>
+                                <select id="forcespeed">
+                                    <option value="">Not set</option>
+                                    <option value="0">No (0)</option>
+                                    <option value="1">Yes (1)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="bike" class="tab-content">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Resistance</label>
+                                <input type="number" id="resistance" min="1" max="32" placeholder="15">
+                                <span class="help-text">1-32</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Power</label>
+                                <input type="number" id="power" placeholder="200">
+                                <span class="help-text">watts</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Lower Resist</label>
+                                <input type="number" id="lower_resistance" min="1" max="32" placeholder="10">
+                            </div>
+                            <div class="form-group">
+                                <label>Upper Resist</label>
+                                <input type="number" id="upper_resistance" min="1" max="32" placeholder="20">
+                            </div>
+                            <div class="form-group">
+                                <label>Cadence</label>
+                                <input type="number" id="cadence" placeholder="90">
+                                <span class="help-text">RPM</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Lower Cadence</label>
+                                <input type="number" id="lower_cadence" placeholder="80">
+                            </div>
+                            <div class="form-group">
+                                <label>Upper Cadence</label>
+                                <input type="number" id="upper_cadence" placeholder="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Peloton Resist</label>
+                                <input type="number" id="requested_peloton_resistance" min="0" max="100" placeholder="50">
+                                <span class="help-text">0-100</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="heart-rate" class="tab-content">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Zone HR</label>
+                                <input type="number" id="zonehr" min="1" max="5" placeholder="2">
+                                <span class="help-text">zone 1-5</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Max HR</label>
+                                <input type="number" id="maxhr" placeholder="165">
+                            </div>
+                            <div class="form-group">
+                                <label>Loop Time HR</label>
+                                <input type="number" id="looptimehr" placeholder="10">
+                                <span class="help-text">seconds</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="advanced" class="tab-content">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Fan Speed</label>
+                                <input type="number" id="fanspeed" min="0" max="100" placeholder="50">
+                                <span class="help-text">0-100%</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Rower Resist</label>
+                                <input type="number" id="rower_resistance" placeholder="5">
+                            </div>
+                            <div class="form-group">
+                                <label>Pace Intensity</label>
+                                <input type="number" id="pace_intensity" step="0.01" placeholder="1.0">
+                            </div>
+                            <div class="form-group">
+                                <label>Latitude</label>
+                                <input type="number" id="latitude" step="0.0001" placeholder="40.7128">
+                            </div>
+                            <div class="form-group">
+                                <label>Longitude</label>
+                                <input type="number" id="longitude" step="0.0001" placeholder="-74.0060">
+                            </div>
+                            <div class="form-group">
+                                <label>Altitude</label>
+                                <input type="number" id="altitude" step="0.1" placeholder="100.0">
+                                <span class="help-text">meters</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Azimuth</label>
+                                <input type="number" id="azimuth" step="0.1" placeholder="180.0">
+                                <span class="help-text">degrees</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Distance</label>
+                                <input type="number" id="distance" step="0.01" placeholder="5.0">
+                                <span class="help-text">km</span>
+                            </div>
+                            <div class="form-group">
+                                <label>Max Resistance</label>
+                                <input type="number" id="maxresistance" placeholder="25">
+                            </div>
+                            <div class="form-group">
+                                <label>Zone Duration</label>
+                                <input type="number" id="zonedurations" placeholder="300">
+                                <span class="help-text">seconds</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button onclick="addBlock()">Add Block</button>
+                        <button class="secondary" onclick="updateBlock()" id="updateBtn" style="display: none;">Update Block</button>
+                        <button class="danger" onclick="cancelEdit()" id="cancelBtn" style="display: none;">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="output-section">
+                    <h3>XML Output</h3>
+                    <textarea id="xmlOutput" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let workoutRows = [];
+        let selectedBlock = null;
+        let editingIndex = null;
+        
+        function calculateHRZone(zone) {
+            const age = parseInt(document.getElementById('ageValue').value) || 30;
+            const maxHR = 220 - age;
+            
+            const zoneRanges = {
+                1: { low: 0.50, high: 0.60, name: 'Recovery' },
+                2: { low: 0.60, high: 0.70, name: 'Endurance' },
+                3: { low: 0.70, high: 0.80, name: 'Tempo' },
+                4: { low: 0.80, high: 0.90, name: 'Threshold' },
+                5: { low: 0.90, high: 1.00, name: 'VO2 Max' }
+            };
+            
+            const range = zoneRanges[zone];
+            if (!range) return null;
+            
+            const lowBPM = Math.round(maxHR * range.low);
+            const highBPM = Math.round(maxHR * range.high);
+            
+            return {
+                low: lowBPM,
+                high: highBPM,
+                name: range.name
+            };
+        }
+        
+        function updateFTPDisplay() {
+            const ftp = parseInt(document.getElementById('ftpValue').value) || 200;
+            const ftpPercent = parseInt(document.getElementById('ftpPercent').value) || 0;
+            const ftpPercentEnd = parseInt(document.getElementById('ftpPercentEnd').value) || 0;
+            
+            if (ftpPercent) {
+                document.getElementById('wattsDisplay').textContent = `${Math.round(ftp * ftpPercent / 100)}W`;
+            }
+            if (ftpPercentEnd) {
+                document.getElementById('wattsDisplayEnd').textContent = `${Math.round(ftp * ftpPercentEnd / 100)}W`;
+            }
+        }
+        
+        function updateBlockTypeFields() {
+            const blockType = document.getElementById('blockType').value;
+            const ftpEndGroup = document.getElementById('ftpEndGroup');
+            
+            if (blockType === 'warmup' || blockType === 'cooldown') {
+                ftpEndGroup.style.display = 'block';
+                if (blockType === 'warmup') {
+                    document.getElementById('ftpPercent').value = 50;
+                    document.getElementById('ftpPercentEnd').value = 75;
+                }
+                if (blockType === 'cooldown') {
+                    document.getElementById('ftpPercent').value = 75;
+                    document.getElementById('ftpPercentEnd').value = 50;
+                }
+            } else {
+                ftpEndGroup.style.display = 'none';
+                if (blockType === 'rest') {
+                    document.getElementById('ftpPercent').value = 50;
+                }
+                if (blockType === 'interval') {
+                    document.getElementById('ftpPercent').value = 105;
+                }
+                if (blockType === 'steady') {
+                    document.getElementById('ftpPercent').value = 75;
+                }
+                if (blockType === 'freeride') {
+                    document.getElementById('ftpPercent').value = '';
+                }
+            }
+            updateFTPDisplay();
+        }
+        
+        function addPreset(type) {
+            const presets = {
+                'warmup': { duration: '00:10:00', blockType: 'warmup', ftpPercent: 50, ftpPercentEnd: 75 },
+                'cooldown': { duration: '00:10:00', blockType: 'cooldown', ftpPercent: 75, ftpPercentEnd: 50 },
+                'ss': { duration: '00:10:00', blockType: 'steady', ftpPercent: 75 },
+                'interval': { duration: '00:05:00', blockType: 'interval', ftpPercent: 105 },
+                'rest': { duration: '00:03:00', blockType: 'rest', ftpPercent: 50 },
+                'freeride': { duration: '00:10:00', blockType: 'freeride', ftpPercent: null }
+            };
+            
+            const preset = presets[type];
+            if (preset) {
+                document.getElementById('duration').value = preset.duration;
+                document.getElementById('blockType').value = preset.blockType;
+                document.getElementById('ftpPercent').value = preset.ftpPercent || '';
+                document.getElementById('ftpPercentEnd').value = preset.ftpPercentEnd || '';
+                updateBlockTypeFields();
+            }
+        }
+        
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        function addBlock() {
+            const ftp = parseInt(document.getElementById('ftpValue').value) || 200;
+            const blockType = document.getElementById('blockType').value;
+            const ftpPercent = parseInt(document.getElementById('ftpPercent').value);
+            const ftpPercentEnd = parseInt(document.getElementById('ftpPercentEnd').value);
+            
+            const row = {
+                duration: document.getElementById('duration').value || '00:05:00',
+                blockType: blockType
+            };
+            
+            // Collect all parameter values
+            const params = {
+                // Bike
+                speed: document.getElementById('speed').value.trim(),
+                inclination: document.getElementById('inclination').value.trim(),
+                maxspeed: document.getElementById('maxspeed').value.trim(),
+                minspeed: document.getElementById('minspeed').value.trim(),
+                forcespeed: document.getElementById('forcespeed').value,
+                resistance: document.getElementById('resistance').value.trim(),
+                lower_resistance: document.getElementById('lower_resistance').value.trim(),
+                upper_resistance: document.getElementById('upper_resistance').value.trim(),
+                cadence: document.getElementById('cadence').value.trim(),
+                lower_cadence: document.getElementById('lower_cadence').value.trim(),
+                upper_cadence: document.getElementById('upper_cadence').value.trim(),
+                requested_peloton_resistance: document.getElementById('requested_peloton_resistance').value.trim(),
+                // HR
+                zonehr: document.getElementById('zonehr').value.trim(),
+                maxhr: document.getElementById('maxhr').value.trim(),
+                looptimehr: document.getElementById('looptimehr').value.trim(),
+                // Advanced
+                fanspeed: document.getElementById('fanspeed').value.trim(),
+                rower_resistance: document.getElementById('rower_resistance').value.trim(),
+                pace_intensity: document.getElementById('pace_intensity').value.trim(),
+                latitude: document.getElementById('latitude').value.trim(),
+                longitude: document.getElementById('longitude').value.trim(),
+                altitude: document.getElementById('altitude').value.trim(),
+                azimuth: document.getElementById('azimuth').value.trim(),
+                distance: document.getElementById('distance').value.trim(),
+                maxresistance: document.getElementById('maxresistance').value.trim(),
+                zonedurations: document.getElementById('zonedurations').value.trim()
+            };
+            
+            // Determine primary control mode
+            const hasHRZone = params.zonehr !== '';
+            const hasPower = ftpPercent || params.resistance !== '';
+            const hasSpeed = params.speed !== '';
+            
+            // Apply auto-clear logic: only keep the primary control parameter
+            if (hasHRZone) {
+                // HR Zone mode - clear power/resistance/speed
+                row.zonehr = params.zonehr;
+                if (params.maxhr) row.maxhr = params.maxhr;
+                if (params.looptimehr) row.looptimehr = params.looptimehr;
+                // Keep cadence and other non-conflicting params
+                if (params.cadence) row.cadence = params.cadence;
+            } else if (hasPower) {
+                // Power/Resistance mode - clear HR zone
+                // Calculate power from FTP percentage
+                if (ftpPercent) {
+                    row.ftpPercent = ftpPercent;
+                    row.power = Math.round(ftp * ftpPercent / 100);
+                }
+                
+                if (ftpPercentEnd && (blockType === 'warmup' || blockType === 'cooldown')) {
+                    row.ftpPercentEnd = ftpPercentEnd;
+                    row.powerEnd = Math.round(ftp * ftpPercentEnd / 100);
+                }
+                
+                // Add resistance if set
+                if (params.resistance) row.resistance = params.resistance;
+                if (params.lower_resistance) row.lower_resistance = params.lower_resistance;
+                if (params.upper_resistance) row.upper_resistance = params.upper_resistance;
+                if (params.requested_peloton_resistance) row.requested_peloton_resistance = params.requested_peloton_resistance;
+                
+                // Add cadence
+                if (params.cadence) row.cadence = params.cadence;
+                if (params.lower_cadence) row.lower_cadence = params.lower_cadence;
+                if (params.upper_cadence) row.upper_cadence = params.upper_cadence;
+            } else if (hasSpeed) {
+                // Speed mode (treadmill) - clear power and HR zone
+                if (params.speed) row.speed = params.speed;
+                if (params.inclination) row.inclination = params.inclination;
+                if (params.maxspeed) row.maxspeed = params.maxspeed;
+                if (params.minspeed) row.minspeed = params.minspeed;
+                if (params.forcespeed && params.forcespeed !== '') row.forcespeed = params.forcespeed;
+            }
+            
+            // Add non-conflicting parameters
+            if (params.fanspeed) row.fanspeed = params.fanspeed;
+            if (params.rower_resistance) row.rower_resistance = params.rower_resistance;
+            if (params.pace_intensity) row.pace_intensity = params.pace_intensity;
+            if (params.latitude) row.latitude = params.latitude;
+            if (params.longitude) row.longitude = params.longitude;
+            if (params.altitude) row.altitude = params.altitude;
+            if (params.azimuth) row.azimuth = params.azimuth;
+            if (params.distance) row.distance = params.distance;
+            if (params.maxresistance) row.maxresistance = params.maxresistance;
+            if (params.zonedurations) row.zonedurations = params.zonedurations;
+            
+            workoutRows.push(row);
+            updateTimeline();
+            clearForm();
+            generateXML();
+        }
+        
+        function updateBlock() {
+            if (editingIndex === null) return;
+            
+            const ftp = parseInt(document.getElementById('ftpValue').value) || 200;
+            const blockType = document.getElementById('blockType').value;
+            const ftpPercent = parseInt(document.getElementById('ftpPercent').value);
+            const ftpPercentEnd = parseInt(document.getElementById('ftpPercentEnd').value);
+            
+            const row = {
+                duration: document.getElementById('duration').value || '00:05:00',
+                blockType: blockType
+            };
+            
+            // Collect all parameter values
+            const params = {
+                speed: document.getElementById('speed').value.trim(),
+                inclination: document.getElementById('inclination').value.trim(),
+                maxspeed: document.getElementById('maxspeed').value.trim(),
+                minspeed: document.getElementById('minspeed').value.trim(),
+                forcespeed: document.getElementById('forcespeed').value,
+                resistance: document.getElementById('resistance').value.trim(),
+                lower_resistance: document.getElementById('lower_resistance').value.trim(),
+                upper_resistance: document.getElementById('upper_resistance').value.trim(),
+                cadence: document.getElementById('cadence').value.trim(),
+                lower_cadence: document.getElementById('lower_cadence').value.trim(),
+                upper_cadence: document.getElementById('upper_cadence').value.trim(),
+                requested_peloton_resistance: document.getElementById('requested_peloton_resistance').value.trim(),
+                zonehr: document.getElementById('zonehr').value.trim(),
+                maxhr: document.getElementById('maxhr').value.trim(),
+                looptimehr: document.getElementById('looptimehr').value.trim(),
+                fanspeed: document.getElementById('fanspeed').value.trim(),
+                rower_resistance: document.getElementById('rower_resistance').value.trim(),
+                pace_intensity: document.getElementById('pace_intensity').value.trim(),
+                latitude: document.getElementById('latitude').value.trim(),
+                longitude: document.getElementById('longitude').value.trim(),
+                altitude: document.getElementById('altitude').value.trim(),
+                azimuth: document.getElementById('azimuth').value.trim(),
+                distance: document.getElementById('distance').value.trim(),
+                maxresistance: document.getElementById('maxresistance').value.trim(),
+                zonedurations: document.getElementById('zonedurations').value.trim()
+            };
+            
+            // Determine primary control mode
+            const hasHRZone = params.zonehr !== '';
+            const hasPower = ftpPercent || params.resistance !== '';
+            const hasSpeed = params.speed !== '';
+            
+            // Apply auto-clear logic
+            if (hasHRZone) {
+                row.zonehr = params.zonehr;
+                if (params.maxhr) row.maxhr = params.maxhr;
+                if (params.looptimehr) row.looptimehr = params.looptimehr;
+                if (params.cadence) row.cadence = params.cadence;
+            } else if (hasPower) {
+                if (ftpPercent) {
+                    row.ftpPercent = ftpPercent;
+                    row.power = Math.round(ftp * ftpPercent / 100);
+                }
+                
+                if (ftpPercentEnd && (blockType === 'warmup' || blockType === 'cooldown')) {
+                    row.ftpPercentEnd = ftpPercentEnd;
+                    row.powerEnd = Math.round(ftp * ftpPercentEnd / 100);
+                }
+                
+                if (params.resistance) row.resistance = params.resistance;
+                if (params.lower_resistance) row.lower_resistance = params.lower_resistance;
+                if (params.upper_resistance) row.upper_resistance = params.upper_resistance;
+                if (params.requested_peloton_resistance) row.requested_peloton_resistance = params.requested_peloton_resistance;
+                
+                if (params.cadence) row.cadence = params.cadence;
+                if (params.lower_cadence) row.lower_cadence = params.lower_cadence;
+                if (params.upper_cadence) row.upper_cadence = params.upper_cadence;
+            } else if (hasSpeed) {
+                if (params.speed) row.speed = params.speed;
+                if (params.inclination) row.inclination = params.inclination;
+                if (params.maxspeed) row.maxspeed = params.maxspeed;
+                if (params.minspeed) row.minspeed = params.minspeed;
+                if (params.forcespeed && params.forcespeed !== '') row.forcespeed = params.forcespeed;
+            }
+            
+            // Add non-conflicting parameters
+            if (params.fanspeed) row.fanspeed = params.fanspeed;
+            if (params.rower_resistance) row.rower_resistance = params.rower_resistance;
+            if (params.pace_intensity) row.pace_intensity = params.pace_intensity;
+            if (params.latitude) row.latitude = params.latitude;
+            if (params.longitude) row.longitude = params.longitude;
+            if (params.altitude) row.altitude = params.altitude;
+            if (params.azimuth) row.azimuth = params.azimuth;
+            if (params.distance) row.distance = params.distance;
+            if (params.maxresistance) row.maxresistance = params.maxresistance;
+            if (params.zonedurations) row.zonedurations = params.zonedurations;
+            
+            workoutRows[editingIndex] = row;
+            cancelEdit();
+            updateTimeline();
+            generateXML();
+        }
+        
+        function cancelEdit() {
+            editingIndex = null;
+            selectedBlock = null;
+            clearForm();
+            document.getElementById('updateBtn').style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
+            updateTimeline();
+        }
+        
+        function updateTimeline() {
+            const container = document.getElementById('timelineBlocks');
+            
+            if (workoutRows.length === 0) {
+                container.innerHTML = '<div class="empty-timeline">Click "Add Block" to start building your workout</div>';
+                document.getElementById('totalDuration').textContent = '00:00:00';
+                document.getElementById('totalBlocks').textContent = '0';
+                return;
+            }
+            
+            // Calculate total duration in seconds
+            let totalSeconds = 0;
+            workoutRows.forEach(row => {
+                totalSeconds += durationToSeconds(row.duration);
+            });
+            
+            const maxHeight = 180;
+            
+            container.innerHTML = workoutRows.map((row, index) => {
+                const seconds = durationToSeconds(row.duration);
+                const width = Math.max(40, (seconds / totalSeconds) * 800);
+                
+                // Determine block type/color and build display info
+                let gradient = 'linear-gradient(135deg, #4a90e2 0%, #357abd 100%)';
+                let blockTypeName = '';
+                let details = [];
+                
+                if (row.blockType === 'warmup') {
+                    gradient = 'linear-gradient(135deg, #3498db 0%, #e74c3c 100%)';
+                    blockTypeName = 'Warmup';
+                    if (row.ftpPercent && row.ftpPercentEnd) {
+                        details.push(`${row.ftpPercent}→${row.ftpPercentEnd}%`);
+                        details.push(`${row.power}→${row.powerEnd}W`);
+                    }
+                } else if (row.blockType === 'cooldown') {
+                    gradient = 'linear-gradient(135deg, #e74c3c 0%, #3498db 100%)';
+                    blockTypeName = 'Cooldown';
+                    if (row.ftpPercent && row.ftpPercentEnd) {
+                        details.push(`${row.ftpPercent}→${row.ftpPercentEnd}%`);
+                        details.push(`${row.power}→${row.powerEnd}W`);
+                    }
+                } else if (row.blockType === 'rest') {
+                    gradient = 'linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)';
+                    blockTypeName = 'Rest';
+                    if (row.ftpPercent) {
+                        details.push(`${row.ftpPercent}%`);
+                        details.push(`${row.power}W`);
+                    }
+                } else if (row.blockType === 'freeride') {
+                    gradient = 'linear-gradient(135deg, #1abc9c 0%, #16a085 100%)';
+                    blockTypeName = 'Free Ride';
+                } else if (row.blockType === 'interval') {
+                    blockTypeName = 'Interval';
+                    if (row.ftpPercent) {
+                        details.push(`${row.ftpPercent}%`);
+                        details.push(`${row.power}W`);
+                    }
+                    const intensity = row.ftpPercent || ((row.power / 200) * 100);
+                    if (intensity >= 105) {
+                        gradient = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    }
+                } else {
+                    blockTypeName = 'Steady';
+                }
+                
+                // Add power info if present and not already added
+                if (row.power && details.length === 0) {
+                    const intensity = row.ftpPercent || ((row.power / 200) * 100);
+                    if (intensity >= 105) {
+                        gradient = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    } else if (intensity >= 90) {
+                        gradient = 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)';
+                    } else if (intensity >= 75) {
+                        gradient = 'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)';
+                    } else {
+                        gradient = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    }
+                    if (row.ftpPercent) {
+                        details.push(`${row.ftpPercent}%`);
+                    }
+                    details.push(`${row.power}W`);
+                }
+                
+                // Add other parameters
+                if (row.resistance) {
+                    gradient = 'linear-gradient(135deg, #e67e22 0%, #d35400 100%)';
+                    details.push(`Resist ${row.resistance}`);
+                }
+                if (row.speed) {
+                    if (!row.power && !row.resistance) {
+                        gradient = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    }
+                    details.push(`${row.speed} km/h`);
+                }
+                if (row.zonehr) {
+                    gradient = 'linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%)';
+                    const hrZone = calculateHRZone(parseInt(row.zonehr));
+                    if (hrZone) {
+                        details.push(`HR Zone ${row.zonehr}`);
+                        details.push(`${hrZone.low}-${hrZone.high} BPM`);
+                    } else {
+                        details.push(`HR Zone ${row.zonehr}`);
+                    }
+                }
+                if (row.cadence) {
+                    details.push(`${row.cadence} RPM`);
+                }
+                if (row.inclination) {
+                    details.push(`${row.inclination}% grade`);
+                }
+                
+                const isSelected = index === editingIndex ? 'selected' : '';
+                const height = Math.min(maxHeight, Math.max(60, seconds / 10));
+                
+                // Build display with block type name and details
+                let displayHtml = `<div class="block-duration">${row.duration}</div>`;
+                if (blockTypeName) {
+                    displayHtml += `<div class="block-type" style="font-weight: bold; margin-bottom: 2px;">${blockTypeName}</div>`;
+                }
+                details.forEach(detail => {
+                    displayHtml += `<div class="block-type">${detail}</div>`;
+                });
+                
+                return `
+                    <div class="block ${isSelected}" 
+                         style="width: ${width}px; height: ${height}px; background: ${gradient}; padding: 6px 4px;"
+                         onclick="selectBlock(${index})"
+                         oncontextmenu="event.preventDefault(); deleteBlock(${index}); return false;"
+                         title="Block ${index + 1}: ${row.duration}\nRight-click to delete">
+                        ${displayHtml}
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('totalDuration').textContent = secondsToDuration(totalSeconds);
+            document.getElementById('totalBlocks').textContent = workoutRows.length;
+        }
+        
+        function selectBlock(index) {
+            editingIndex = index;
+            selectedBlock = index;
+            const row = workoutRows[index];
+            
+            // Populate form
+            Object.entries(row).forEach(([key, value]) => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.value = value;
+                }
+            });
+            
+            // Set block type
+            if (row.blockType) {
+                document.getElementById('blockType').value = row.blockType;
+                updateBlockTypeFields();
+            }
+            
+            // Set FTP percentages if available
+            if (row.ftpPercent) {
+                document.getElementById('ftpPercent').value = row.ftpPercent;
+            }
+            if (row.ftpPercentEnd) {
+                document.getElementById('ftpPercentEnd').value = row.ftpPercentEnd;
+            }
+            
+            updateFTPDisplay();
+            
+            document.getElementById('updateBtn').style.display = 'block';
+            document.getElementById('cancelBtn').style.display = 'block';
+            
+            updateTimeline();
+        }
+        
+        function deleteBlock(index) {
+            workoutRows.splice(index, 1);
+            if (editingIndex === index) {
+                cancelEdit();
+            }
+            updateTimeline();
+            generateXML();
+        }
+        
+        function durationToSeconds(duration) {
+            const parts = duration.split(':').map(Number);
+            if (parts.length === 3) {
+                return parts[0] * 3600 + parts[1] * 60 + parts[2];
+            }
+            return 0;
+        }
+        
+        function secondsToDuration(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        
+        function clearForm() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                // Preserve FTP, age, and export format
+                if (input.id === 'ftpValue' || input.id === 'ageValue' || input.id === 'exportFormat') {
+                    return; // Don't clear these
+                }
+                
+                if (input.id === 'duration') {
+                    input.value = '00:05:00';
+                } else if (input.id === 'blockType') {
+                    input.value = 'steady';
+                } else if (input.tagName === 'SELECT') {
+                    input.value = '';
+                } else {
+                    input.value = '';
+                }
+            });
+            
+            // Reset block type fields visibility
+            updateBlockTypeFields();
+        }
+        
+        function clearWorkout() {
+            if (confirm('Clear all blocks?')) {
+                workoutRows = [];
+                editingIndex = null;
+                selectedBlock = null;
+                updateTimeline();
+                document.getElementById('xmlOutput').value = '';
+                document.getElementById('updateBtn').style.display = 'none';
+                document.getElementById('cancelBtn').style.display = 'none';
+            }
+        }
+        
+        function generateXML() {
+            if (workoutRows.length === 0) {
+                document.getElementById('xmlOutput').value = '';
+                return;
+            }
+            
+            const format = document.getElementById('exportFormat').value;
+            const ftp = parseInt(document.getElementById('ftpValue').value) || 200;
+            
+            // Check for HR zones in ZWO format
+            if (format === 'zwo') {
+                const hasHRZones = workoutRows.some(row => row.zonehr);
+                if (hasHRZones) {
+                    const proceed = confirm(
+                        'WARNING: ZWO format does not support HR zones.\n\n' +
+                        'HR zone blocks will be converted to Free Ride (no power target).\n\n' +
+                        'For HR zone workouts, use QZ XML format instead.\n\n' +
+                        'Continue with ZWO export anyway?'
+                    );
+                    if (!proceed) {
+                        document.getElementById('exportFormat').value = 'qz';
+                        generateXML();
+                        return;
+                    }
+                }
+            }
+            
+            let xml = '';
+            
+            if (format === 'zwo') {
+                // Generate ZWO format
+                xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+                xml += '<workout_file>\n';
+                xml += '    <author>QZ Workout Builder</author>\n';
+                xml += '    <name>Custom Workout</name>\n';
+                xml += '    <description>Created with QZ Workout Builder</description>\n';
+                xml += `    <sportType>bike</sportType>\n`;
+                xml += `    <tags></tags>\n`;
+                xml += '    <workout>\n';
+                
+                workoutRows.forEach(row => {
+                    const durationSeconds = durationToSeconds(row.duration);
+                    
+                    if (row.blockType === 'warmup') {
+                        const powerLow = (row.power / ftp).toFixed(4);
+                        const powerHigh = (row.powerEnd / ftp).toFixed(4);
+                        xml += `        <Warmup Duration="${durationSeconds}" PowerLow="${powerLow}" PowerHigh="${powerHigh}"`;
+                        if (row.cadence) xml += ` Cadence="${row.cadence}"`;
+                        xml += '/>\n';
+                    } else if (row.blockType === 'cooldown') {
+                        const powerLow = (row.powerEnd / ftp).toFixed(4);
+                        const powerHigh = (row.power / ftp).toFixed(4);
+                        xml += `        <Cooldown Duration="${durationSeconds}" PowerLow="${powerLow}" PowerHigh="${powerHigh}"`;
+                        if (row.cadence) xml += ` Cadence="${row.cadence}"`;
+                        xml += '/>\n';
+                    } else if (row.blockType === 'freeride') {
+                        xml += `        <FreeRide Duration="${durationSeconds}"`;
+                        if (row.cadence) xml += ` Cadence="${row.cadence}"`;
+                        xml += '/>\n';
+                    } else {
+                        // SteadyState
+                        const power = row.power ? (row.power / ftp).toFixed(4) : '0.75';
+                        xml += `        <SteadyState Duration="${durationSeconds}" Power="${power}"`;
+                        if (row.cadence) xml += ` Cadence="${row.cadence}"`;
+                        xml += '/>\n';
+                    }
+                });
+                
+                xml += '    </workout>\n';
+                xml += '</workout_file>';
+            } else {
+                // Generate QZ XML format
+                xml = '<?xml version="1.0" encoding="UTF-8"?>\n<rows>\n';
+                
+                workoutRows.forEach(row => {
+                    // For warmup/cooldown with power ramp, create multiple steps
+                    if ((row.blockType === 'warmup' || row.blockType === 'cooldown') && row.power && row.powerEnd) {
+                        const durationSeconds = durationToSeconds(row.duration);
+                        const steps = 10; // Create 10 steps for smooth ramp
+                        const stepDuration = Math.floor(durationSeconds / steps);
+                        const powerDiff = row.powerEnd - row.power;
+                        
+                        for (let i = 0; i < steps; i++) {
+                            const stepPower = Math.round(row.power + (powerDiff * i / (steps - 1)));
+                            const stepTime = secondsToDuration(stepDuration);
+                            const attributes = [`duration="${stepTime}"`, `power="${stepPower}"`];
+                            
+                            // Add other parameters from first step only
+                            if (i === 0) {
+                                if (row.cadence) attributes.push(`cadence="${row.cadence}"`);
+                                if (row.resistance) attributes.push(`resistance="${row.resistance}"`);
+                            }
+                            
+                            xml += `    <row ${attributes.join(' ')}/>\n`;
+                        }
+                    } else {
+                        // Regular block
+                        const attributes = [];
+                        
+                        // Add duration
+                        attributes.push(`duration="${row.duration}"`);
+                        
+                        // Add power if present
+                        if (row.power) {
+                            attributes.push(`power="${row.power}"`);
+                        }
+                        
+                        // Add other QZ-specific parameters
+                        const qzParams = [
+                            'speed', 'inclination', 'maxspeed', 'minspeed', 'forcespeed',
+                            'resistance', 'lower_resistance', 'upper_resistance',
+                            'cadence', 'lower_cadence', 'upper_cadence', 'requested_peloton_resistance',
+                            'zonehr', 'maxhr', 'looptimehr',
+                            'fanspeed', 'rower_resistance', 'pace_intensity',
+                            'latitude', 'longitude', 'altitude', 'azimuth', 'distance',
+                            'maxresistance', 'zonedurations'
+                        ];
+                        
+                        qzParams.forEach(param => {
+                            if (row[param]) {
+                                attributes.push(`${param}="${row[param]}"`);
+                            }
+                        });
+                        
+                        xml += `    <row ${attributes.join(' ')}/>\n`;
+                    }
+                });
+                
+                xml += '</rows>';
+            }
+            
+            document.getElementById('xmlOutput').value = xml;
+        }
+        
+        function downloadXML() {
+            const xml = document.getElementById('xmlOutput').value;
+            
+            if (!xml) {
+                alert('No XML to download. Add blocks first.');
+                return;
+            }
+            
+            const format = document.getElementById('exportFormat').value;
+            const extension = format === 'zwo' ? '.zwo' : '.xml';
+            
+            const blob = new Blob([xml], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qz-workout${extension}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function importXML() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xml';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = event => {
+                    try {
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(event.target.result, 'text/xml');
+                        const rows = xmlDoc.getElementsByTagName('row');
+                        
+                        workoutRows = [];
+                        
+                        for (let i = 0; i < rows.length; i++) {
+                            const row = {};
+                            const attributes = rows[i].attributes;
+                            
+                            for (let j = 0; j < attributes.length; j++) {
+                                const attr = attributes[j];
+                                row[attr.name] = attr.value;
+                            }
+                            
+                            // Infer block type from parameters
+                            if (row.zonehr) {
+                                row.blockType = 'steady';
+                            } else if (row.power) {
+                                const ftp = parseInt(document.getElementById('ftpValue').value) || 200;
+                                row.ftpPercent = Math.round((parseInt(row.power) / ftp) * 100);
+                                row.blockType = 'steady';
+                            } else if (row.speed) {
+                                row.blockType = 'steady';
+                            } else if (row.resistance) {
+                                row.blockType = 'steady';
+                            } else {
+                                row.blockType = 'steady';
+                            }
+                            
+                            workoutRows.push(row);
+                        }
+                        
+                        updateTimeline();
+                        generateXML();
+                    } catch (error) {
+                        alert('Error parsing XML: ' + error.message);
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('ftpPercent').addEventListener('input', updateFTPDisplay);
+            document.getElementById('ftpPercentEnd').addEventListener('input', updateFTPDisplay);
+            document.getElementById('exportFormat').addEventListener('change', () => {
+                const format = document.getElementById('exportFormat').value;
+                if (format === 'zwo') {
+                    const hasHRZones = workoutRows.some(row => row.zonehr);
+                    if (hasHRZones) {
+                        alert('Note: ZWO format does not support HR zones. HR zone blocks will be converted to Free Ride.');
+                    }
+                }
+                generateXML();
+            });
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' && editingIndex !== null) {
+                deleteBlock(editingIndex);
+            }
+            if (e.key === 'Escape' && editingIndex !== null) {
+                cancelEdit();
+            }
+        });
+    </script>
+</body>
+</html>
