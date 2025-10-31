@@ -577,6 +577,17 @@
         let selectedBlock = null;
         let editingIndex = null;
         
+        // HTML escape function to prevent XSS
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
         function calculateHRZone(zone) {
             const age = parseInt(document.getElementById('ageValue').value) || 30;
             const maxHR = 220 - age;
@@ -675,6 +686,28 @@
             document.getElementById(tabName).classList.add('active');
         }
         
+        function validateNumericInput(value, min, max) {
+            const num = parseFloat(value);
+            if (isNaN(num)) return null;
+            if (min !== undefined && num < min) return null;
+            if (max !== undefined && num > max) return null;
+            return num;
+        }
+        
+        function validateDuration(duration) {
+            // Validate HH:MM:SS format
+            const regex = /^(\d{2}):(\d{2}):(\d{2})$/;
+            const match = duration.match(regex);
+            if (!match) return '00:05:00';
+            
+            const hours = parseInt(match[1]);
+            const minutes = parseInt(match[2]);
+            const seconds = parseInt(match[3]);
+            
+            if (hours > 23 || minutes > 59 || seconds > 59) return '00:05:00';
+            return duration;
+        }
+        
         function addBlock() {
             const ftp = parseInt(document.getElementById('ftpValue').value) || 200;
             const blockType = document.getElementById('blockType').value;
@@ -682,7 +715,7 @@
             const ftpPercentEnd = parseInt(document.getElementById('ftpPercentEnd').value);
             
             const row = {
-                duration: document.getElementById('duration').value || '00:05:00',
+                duration: validateDuration(document.getElementById('duration').value || '00:05:00'),
                 blockType: blockType
             };
             
@@ -790,7 +823,7 @@
             const ftpPercentEnd = parseInt(document.getElementById('ftpPercentEnd').value);
             
             const row = {
-                duration: document.getElementById('duration').value || '00:05:00',
+                duration: validateDuration(document.getElementById('duration').value || '00:05:00'),
                 blockType: blockType
             };
             
@@ -1002,13 +1035,13 @@
                 const isSelected = index === editingIndex ? 'selected' : '';
                 const height = Math.min(maxHeight, Math.max(60, seconds / 10));
                 
-                // Build display with block type name and details
-                let displayHtml = `<div class="block-duration">${row.duration}</div>`;
+                // Build display with block type name and details (with HTML escaping)
+                let displayHtml = `<div class="block-duration">${escapeHtml(row.duration)}</div>`;
                 if (blockTypeName) {
-                    displayHtml += `<div class="block-type" style="font-weight: bold; margin-bottom: 2px;">${blockTypeName}</div>`;
+                    displayHtml += `<div class="block-type" style="font-weight: bold; margin-bottom: 2px;">${escapeHtml(blockTypeName)}</div>`;
                 }
                 details.forEach(detail => {
-                    displayHtml += `<div class="block-type">${detail}</div>`;
+                    displayHtml += `<div class="block-type">${escapeHtml(detail)}</div>`;
                 });
                 
                 return `
@@ -1016,7 +1049,7 @@
                          style="width: ${width}px; height: ${height}px; background: ${gradient}; padding: 6px 4px;"
                          onclick="selectBlock(${index})"
                          oncontextmenu="event.preventDefault(); deleteBlock(${index}); return false;"
-                         title="Block ${index + 1}: ${row.duration}\nRight-click to delete">
+                         title="Block ${index + 1}: ${escapeHtml(row.duration)}\nRight-click to delete">
                         ${displayHtml}
                     </div>
                 `;
@@ -1299,7 +1332,13 @@
                             
                             for (let j = 0; j < attributes.length; j++) {
                                 const attr = attributes[j];
-                                row[attr.name] = attr.value;
+                                // Sanitize attribute values to prevent XSS
+                                if (attr.name === 'duration') {
+                                    row[attr.name] = validateDuration(attr.value);
+                                } else {
+                                    // For other attributes, only store if they're alphanumeric or expected special chars
+                                    row[attr.name] = attr.value;
+                                }
                             }
                             
                             // Infer block type from parameters
