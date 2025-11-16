@@ -1,2 +1,3 @@
 # qz-workout-builder
 [access here](https://deejcuk.github.io/qz-workout-builder/index.html)
+this is  terrible implemenatation of something but it worked for me to get what i need out of it, thanks to claude....
